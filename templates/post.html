@@ -1,0 +1,82 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block content %}
+{% include "header.html" %}
+
+<!-- Page Header -->
+<header class="masthead" style="background-image: url('{{post.img_url}}')">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <div class="post-heading">
+                    <h1>{{post.title}}</h1>
+                    <h2 class="subheading">{{post.subtitle}}</h2>
+                    <span class="meta">Posted by
+              <a href="#">{{post.author}}</a>
+              on {{post.date}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                {{ post.body|safe }}
+                <hr>
+                <!--     admin才能編輯     -->
+                {% if current_user.id == 1: %}
+                <div class="clearfix">
+                    <a class="btn btn-primary float-right" href="{{url_for('edit_post', post_id=post.id)}}">Edit
+                        Post</a>
+                </div>
+                {% endif %}
+
+
+                <!--           Comments Area  確認是否有登入 有登入才能回復   -->
+                {% if current_user.is_authenticated: %}
+
+                {{ ckeditor.load() }}
+                {{ ckeditor.config(name='bodyi') }}
+                <!--           button_map 這邊設定bootstrap樣式 -->
+                {{ wtf.quick_form(form, novalidate=True, button_map={'submit': 'primary'}) }}
+                {% else: %}
+                <div>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Comment</a>
+                </div>
+                {% endif %}
+                <div class="col-lg-8 col-md-10 mx-auto comment">
+<!--                    如何做成可回復的樣子???   try1-->
+                    {% for comment in post.user %}
+                    <ul class="commentList">
+                        <li>
+                            <div class="commenterImage">
+                                <img src="{{ comment.user.email | gravatar }}"/>
+                            </div>
+                            <div class="commentText">
+
+                                <p>{{ comment.comment | safe }}</p>
+                                <span class="date sub-text">{{ comment.user.name }}</span>
+
+                            </div>
+                        </li>
+                    </ul>
+                    {% endfor %}
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<hr>
+{% include "footer.html" %}
+{% endblock %}
